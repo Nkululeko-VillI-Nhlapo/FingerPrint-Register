@@ -14,6 +14,8 @@ const statusDiv = document.getElementById("status");
 
 // Register the fingerprint using WebAuthn (FIDO2)
 async function registerFingerprint() {
+  console.log("Registering fingerprint...");
+
   try {
     const publicKey = {
       challenge: new Uint8Array(32), // Normally random from server
@@ -34,10 +36,11 @@ async function registerFingerprint() {
 
     const credential = await navigator.credentials.create({ publicKey });
 
+    // Convert rawId to base64
     const rawId = credential.rawId;
     const encodedId = bufferToBase64(rawId);
 
-    // ✅ Store the credential ID locally for this example
+    // Store the credential ID locally for this example
     localStorage.setItem("fingerprintId", encodedId);
     console.log("Stored Fingerprint ID:", encodedId);
 
@@ -50,6 +53,8 @@ async function registerFingerprint() {
 
 // Verify the fingerprint by triggering WebAuthn assertion
 async function verifyFingerprint() {
+  console.log("Verifying fingerprint...");
+
   const encodedId = localStorage.getItem("fingerprintId");
 
   // Handle missing or invalid ID
