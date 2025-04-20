@@ -1,81 +1,84 @@
-// Get reference to the div where we show status messages
+// Utility to convert ArrayBuffer to base64
+function bufferToBase64(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+// Utility to convert base64 to ArrayBuffer
+function base64ToBuffer(base64) {
+  const binary = atob(base64);
+  return Uint8Array.from(binary, char => char.charCodeAt(0)).buffer;
+}
+
+// Select the status div for feedback
 const statusDiv = document.getElementById("status");
 
-// ---------------------------------------
-// Register Fingerprint Button Click Logic
-// ---------------------------------------
+// Register the fingerprint using WebAuthn (FIDO2)
 async function registerFingerprint() {
   try {
-    // Create the public key credential creation options
     const publicKey = {
-      challenge: new Uint8Array(32), // Random challenge (should come from backend ideally)
-      rp: { name: "Fingerprint Attendance" }, // Relying party (your app)
+      challenge: new Uint8Array(32), // Normally random from server
+      rp: { name: "Fingerprint Attendance App" },
       user: {
-        id: new Uint8Array(16), // Random user ID (in real use, this should be unique per user)
-        name: "user@example.com", // User name (placeholder)
-        displayName: "User" // What to show in browser UI
+        id: Uint8Array.from("unique-user-id", c => c.charCodeAt(0)),
+        name: "learner@example.com",
+        displayName: "Learner Name"
       },
-      pubKeyCredParams: [{ type: "public-key", alg: -7 }], // Acceptable algorithms
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }],
       authenticatorSelection: {
-        authenticatorAttachment: "platform", // Use the device’s built-in biometric
-        userVerification: "required" // Require fingerprint or other verification
+        authenticatorAttachment: "platform", // Use built-in fingerprint scanner
+        userVerification: "required"
       },
-      timeout: 60000, // Timeout in milliseconds
-      attestation: "none" // We don’t need device attestation
+      timeout: 60000,
+      attestation: "direct"
     };
 
-    // Trigger the browser to start fingerprint registration
     const credential = await navigator.credentials.create({ publicKey });
 
-    // Convert the binary rawId (unique ID for this fingerprint credential)
-    // to Base64 string before saving to localStorage
-    const encodedId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-    localStorage.setItem("fingerprintId", encodedId); // Save fingerprint ID locally
+    const rawId = credential.rawId;
+    const encodedId = bufferToBase64(rawId);
 
-    // Let the user know it worked
-    statusDiv.innerText = "✅ Fingerprint Registered!";
-  } catch (err) {
-    console.error(err);
-    statusDiv.innerText = "❌ Registration Failed: " + err.message;
+    // ✅ Store the credential ID locally for this example
+    localStorage.setItem("fingerprintId", encodedId);
+    console.log("Stored Fingerprint ID:", encodedId);
+
+    statusDiv.innerText = "✅ Fingerprint Registered Successfully!";
+  } catch (error) {
+    console.error("Registration failed:", error);
+    statusDiv.innerText = `❌ Registration Failed: ${error.message}`;
   }
 }
 
-// ----------------------------------------
-// Verify Fingerprint Button Click Logic
-// ----------------------------------------
+// Verify the fingerprint by triggering WebAuthn assertion
 async function verifyFingerprint() {
+  const encodedId = localStorage.getItem("fingerprintId");
+
+  // Handle missing or invalid ID
+  if (!encodedId || encodedId === "undefined") {
+    statusDiv.innerText = "❗ No fingerprint registered. Please register first.";
+    return;
+  }
+
   try {
-    // Get the stored fingerprint credential ID from localStorage
-    const encodedId = localStorage.getItem("fingerprintId");
+    const rawId = base64ToBuffer(encodedId);
 
-    if (!encodedId) {
-      // If no ID is stored, show error
-      statusDiv.innerText = "❗ No fingerprint registered!";
-      return;
-    }
-
-    // Decode the Base64 string back to ArrayBuffer for verification
-    const rawId = Uint8Array.from(atob(encodedId), c => c.charCodeAt(0)).buffer;
-
-    // Create verification request options
     const publicKey = {
-      challenge: new Uint8Array(32), // Random challenge again
+      challenge: new Uint8Array(32), // Should match server-generated challenge
       allowCredentials: [{
-        id: rawId, // This is the credential ID the user must match
         type: "public-key",
-        transports: ["internal"] // Use built-in authenticator (e.g. fingerprint)
+        id: rawId,
+        transports: ["internal"]
       }],
       timeout: 60000,
       userVerification: "required"
     };
 
-    // Trigger fingerprint scan
     const assertion = await navigator.credentials.get({ publicKey });
 
-    // If the fingerprint matched the stored credential, success!
-    statusDiv.innerText = "✅ Fingerprint Verified!";
-  } catch (err) {
-    console.error(err);
-    statusDiv.innerText = "❌ Verification Failed: " + err.message;
+    // If no error was thrown, verification passed
+    statusDiv.innerText = "✅ Fingerprint Verified. Attendance Marked!";
+    console.log("Assertion:", assertion);
+  } catch (error) {
+    console.error("Verification failed:", error);
+    statusDiv.innerText = `❌ Verification Failed: ${error.message}`;
   }
 }

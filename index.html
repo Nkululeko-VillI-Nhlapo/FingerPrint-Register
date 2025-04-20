@@ -3,17 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>Fingerprint Attendance</title>
-
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 20px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-
   <h1>Fingerprint Attendance System</h1>
-
-  <button class="register" onclick="registerFingerprint()">Register Fingerprint</button>
-  <button class="verify" onclick="verifyFingerprint()">Verify Fingerprint</button>
-
+  <button onclick="registerFingerprint()">📝 Register Fingerprint</button>
+  <button onclick="verifyFingerprint()">🔐 Verify Fingerprint</button>
   <div id="status"></div>
 
-  <script src="script.js"></script>
+  <script src="fingerprint.js"></script>
 </body>
 </html>
