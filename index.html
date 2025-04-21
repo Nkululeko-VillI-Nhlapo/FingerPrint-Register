@@ -1,33 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Fingerprint Attendance</title>
+  <meta charset="UTF-8" />
+  <title>Biometric Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #56ccf2, #2f80ed);
+      color: #fff;
       text-align: center;
-      padding: 50px;
+      padding: 40px;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 20px;
+
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      font-size: 1em;
+      padding: 12px 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
     }
+
+    select {
+      width: 250px;
+      color: #333;
+    }
+
+    button {
+      background-color: #fff;
+      color: #2f80ed;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #e1ecf4;
+    }
+
     #status {
       margin-top: 30px;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 1.1em;
+      background-color: #ffffff33;
+      padding: 15px;
+      border-radius: 10px;
+      width: 80%;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
-<body>
-  <h1>Fingerprint Attendance System</h1>
-  <button onclick="registerFingerprint()">📝 Register Fingerprint</button>
-  <button onclick="verifyFingerprint()">🔐 Verify Fingerprint</button>
-  <div id="status"></div>
 
-  <script src="fingerprint.js"></script>
+<body>
+  <h1>📚 Fingerprint Attendance</h1>
+
+  <label for="learnerSelect">Select Your Name:</label><br />
+  <select id="learnerSelect">
+    <option value="">-- Choose a learner --</option>
+  </select><br />
+
+  <button id="registerBtn">📝 Register Fingerprint</button>
+  <button id="verifyBtn">✅ Mark Attendance</button>
+
+  <div id="status">🔍 Waiting for user action...</div>
+
+  <script type="module" src="supabase.js"></script>
+  <script type="module" src="fingerprint.js"></script>
 </body>
 </html>
